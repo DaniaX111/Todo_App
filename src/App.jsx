@@ -1,28 +1,60 @@
 import { useState, useEffect } from "react";
+import { v4 as uuidv4 } from 'uuid';
 import TodoList from './components/Todos/TodoList';
 import TodoForm from './components/Todos/TodoForm';
+import TodosActions from "./components/Todos/TodosActions.jsx";
 import './App.css'
 
 function App() {
     const [todos, setTodos] = useState([]);
 
     const addTodoHandler = (text) => {
-        if (text) {
-            setTodos([...todos, text]);
+        const newTodo = {
+            text,
+            isCompleted: false,
+            id: uuidv4()
+        };
+        console.log(newTodo);
+        if (newTodo.text) {
+            setTodos([...todos, newTodo]);
         }
-    }
+    };
 
-    const deleteTodoHandler = (index) => {
-        setTodos(todos.filter((_, idx) => idx !== index));
-    }
+    const deleteTodoHandler = (id) => {
+        setTodos(todos.filter((todo) => todo.id !== id));
+    };
+
+    const toggleTodoHandler = (id) => {
+        setTodos(todos.map((todo) => {
+            return todo.id === id
+                ? {...todo, isCompleted: !todo.isCompleted}
+                : {...todo}
+        }));
+    };
+    
+    const resetTodosHandler = () => {
+        setTodos([]);
+    };
+
+    const deleteCompletedTodosHandler = () => {
+        setTodos(todos.filter((todo) => !todo.isCompleted));
+    };
+
+    const completedTodosCounter = todos.filter((todo) => todo.isCompleted).length;
 
     return (
         <div className="App">
             <h1>Todo App</h1>
             <TodoForm addTodo={addTodoHandler} />
-            <TodoList todos={todos} deleteTodo={deleteTodoHandler} />
+            {!!todos.length &&
+                <TodosActions resetTodos={resetTodosHandler} deleteCompletedTodos={deleteCompletedTodosHandler} completedTodosExist={!!completedTodosCounter} />
+            }
+            <TodoList todos={todos} deleteTodo={deleteTodoHandler} toggleTodo={toggleTodoHandler} />
+            {completedTodosCounter > 0 && (
+                <h2>{`You have completed ${completedTodosCounter} ${completedTodosCounter > 1 ? 'todos' : 'todo'}`}</h2>
+            )}
         </div>
     )
 }
 
-export default App
+export default App;
